@@ -1,8 +1,10 @@
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
+import { nitro } from "nitro/vite";
 
 export default defineConfig({
-  // 🚀 Dynamically switch to the Vercel engine when deploying
-  nitro: process.env.VERCEL ? { preset: "vercel" } : undefined,
+  vite: {
+    plugins: [nitro()],
+  },
   tanstackStart: {
     server: {
       entry: "server",
