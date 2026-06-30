@@ -13,11 +13,17 @@
       (function(){try{var t=localStorage.getItem('arc-theme');if(!t){t=window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';}var r=document.documentElement;if(t==='dark')r.classList.add('dark');r.style.colorScheme=t;}catch(e){}})();
     </script>
     <script>
-      window.addEventListener('error', function(e) {
+      function showCrash(msg, source) {
         var errDiv = document.createElement('div');
         errDiv.style = 'position:fixed;top:0;left:0;width:100%;background:red;color:white;padding:20px;z-index:99999;font-family:monospace;white-space:pre-wrap;';
-        errDiv.innerText = 'CRITICAL RUNTIME ERROR: ' + e.message + '\nAt: ' + e.filename + ':' + e.lineno;
+        errDiv.innerText = 'CRITICAL RUNTIME ERROR [' + source + ']:\n' + msg;
         document.body.appendChild(errDiv);
+      }
+      window.addEventListener('error', function(e) {
+        showCrash(e.message + '\nAt: ' + e.filename + ':' + e.lineno, 'SYNC');
+      });
+      window.addEventListener('unhandledrejection', function(e) {
+        showCrash(e.reason ? (e.reason.stack || e.reason.message || e.reason) : 'Unknown Promise Rejection', 'ASYNC_PROMISE');
       });
     </script>
   </head>
