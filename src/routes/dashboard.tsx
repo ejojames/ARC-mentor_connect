@@ -41,14 +41,14 @@ function DashboardGate() {
 
   // Navigations with explicitly requested labels
   const studentNav = [
-    { to: "/dashboard", label: "Opportunities Hub", icon: Compass },
+    { to: "/dashboard", label: "Dashboard / Opportunities Home", icon: Compass },
     { to: "/dashboard/applications", label: "Applications", icon: ClipboardList },
-    { to: "/dashboard/profile", label: "My Profile Settings", icon: UserCircle },
+    { to: "/dashboard/profile", label: "Profile Settings", icon: UserCircle },
   ];
   const mentorNav = [
     { to: "/dashboard", label: "Programs", icon: LayoutDashboard },
     { to: "/dashboard/new", label: "Create", icon: PlusSquare },
-    { to: "/dashboard/profile", label: "My Profile Settings", icon: UserCircle },
+    { to: "/dashboard/profile", label: "Profile Settings", icon: UserCircle },
   ];
   const nav = role === "MENTOR" ? mentorNav : studentNav;
 
