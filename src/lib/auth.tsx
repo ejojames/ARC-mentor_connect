@@ -32,9 +32,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     try {
       const u = await getUserById(uid);
-      setUser(u);
+      if (u) {
+        setUser(u);
+        return;
+      }
+      
+      // If profile doesn't exist, fallback to session metadata so they can reach /onboarding
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session && session.user.id === uid) {
+        setUser({
+          id: uid,
+          email: session.user.email || "",
+          full_name: session.user.user_metadata?.full_name || "",
+          role: (session.user.user_metadata?.role as any) || "STUDENT",
+          bio: "",
+        });
+        return;
+      }
+      setUser(null);
     } catch (e) {
-      console.error("Failed to load profile", e);
+      console.error("Failed to load profile from database:", e);
+      // If RLS fails or network drops, fallback to session metadata
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session && session.user.id === uid) {
+        setUser({
+          id: uid,
+          email: session.user.email || "",
+          full_name: session.user.user_metadata?.full_name || "",
+          role: (session.user.user_metadata?.role as any) || "STUDENT",
+          bio: "",
+        });
+        return;
+      }
       setUser(null);
     }
   }, []);

@@ -133,7 +133,9 @@ export async function updateUser(
     institute: string | null;
   }>,
 ): Promise<void> {
-  const { error } = await supabase.from("profiles").update(patch).eq("id", id);
+  // Use upsert to guarantee that if the profile row is missing (e.g. broken trigger)
+  // it gets created rather than failing silently.
+  const { error } = await supabase.from("profiles").upsert({ id, ...patch }).eq("id", id);
   if (error) throw new Error(error.message);
 }
 
