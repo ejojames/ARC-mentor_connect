@@ -15,15 +15,35 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
+/** Check localStorage for a cached Supabase session without any network call. */
+function hasCachedSession(): boolean {
+  try {
+    // Supabase stores the session under a key like "sb-<project-ref>-auth-token"
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.includes("-auth-token")) {
+        const raw = localStorage.getItem(key);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          // Valid if access_token exists and not expired
+          if (parsed?.access_token && parsed?.expires_at) {
+            return Date.now() / 1000 < parsed.expires_at;
+          }
+        }
+      }
+    }
+  } catch {}
+  return false;
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<DBUser | null>(null);
-  // loading starts true and only ever becomes false once we know the initial
-  // session state (including whether a persisted localStorage session exists).
-  const [loading, setLoading] = useState(true);
+  // Start loading=false immediately so the UI is NEVER blank.
+  // If there's a cached session, flip to true briefly while we validate it.
+  const [loading, setLoading] = useState(() => hasCachedSession());
 
-  // Ref to prevent setLoading(false) racing ahead of a deferred profile fetch
-  // triggered by the INITIAL_SESSION event from onAuthStateChange.
   const pendingFetchRef = useRef(0);
+  const initialised = useRef(false);
 
   const loadUser = useCallback(async (uid: string | null | undefined) => {
     if (!uid) {
@@ -32,12 +52,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     try {
       const u = await getUserById(uid);
-      if (u) {
-        setUser(u);
-        return;
-      }
-      
-      // If profile doesn't exist, fallback to session metadata so they can reach /onboarding
+      if (u) { setUser(u); return; }
+
+      // Fallback to session metadata so the user can reach /onboarding
       const { data: { session } } = await supabase.auth.getSession();
       if (session && session.user.id === uid) {
         setUser({
@@ -52,18 +69,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(null);
     } catch (e) {
       console.error("Failed to load profile from database:", e);
-      // If RLS fails or network drops, fallback to session metadata
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session && session.user.id === uid) {
-        setUser({
-          id: uid,
-          email: session.user.email || "",
-          full_name: session.user.user_metadata?.full_name || "",
-          role: (session.user.user_metadata?.role as any) || "STUDENT",
-          bio: "",
-        });
-        return;
-      }
       setUser(null);
     }
   }, []);
@@ -71,23 +76,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let mounted = true;
 
-    // Auth state listener first — synchronously sets session-derived state.
     const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
       if (!mounted) return;
       if (event === "SIGNED_OUT") {
         setUser(null);
+        setLoading(false);
         return;
       }
       if (event === "SIGNED_IN" || event === "USER_UPDATED" || event === "INITIAL_SESSION") {
-        // Increment the pending-fetch counter so the getSession() callback
-        // below knows not to mark loading=false prematurely.
         pendingFetchRef.current += 1;
         const fetchId = pendingFetchRef.current;
-        // Defer the profile fetch so the listener never blocks.
         setTimeout(async () => {
           if (!mounted) return;
           await loadUser(session?.user?.id ?? null);
-          // Only mark loading done when this is the latest triggered fetch.
           if (mounted && fetchId === pendingFetchRef.current) {
             setLoading(false);
           }
@@ -95,32 +96,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     });
 
-    // Bootstrap with any existing session. If onAuthStateChange fires
-    // INITIAL_SESSION first (which it will with a persisted localStorage token),
-    // the deferred fetch above handles setting loading=false. This fallback
-    // covers the no-session case where INITIAL_SESSION never fires.
+    // Bootstrap — covers the no-session case where INITIAL_SESSION never fires.
     supabase.auth.getSession().then(async ({ data }) => {
       if (!mounted) return;
-      // If a pending fetch from onAuthStateChange is in flight, let that finish
-      // and set loading=false instead of us — avoids double setState.
       if (pendingFetchRef.current > 0) return;
       await loadUser(data.session?.user?.id ?? null);
       if (mounted) setLoading(false);
-    }).catch((error) => {
-      console.error("Supabase Auth Error:", error);
+    }).catch(() => {
       if (mounted) setLoading(false);
     });
 
-    // IMPLEMENT A 3-SECOND TIMEOUT FALLBACK: Safety net to guarantee spinner drops
+    // Hard 5-second safety net — if Supabase never responds, unlock the UI.
     const fallbackTimer = setTimeout(() => {
       if (mounted) {
-        if ((window as any).__loop_shield_activated) return;
-        (window as any).__loop_shield_activated = true;
-        
-        console.warn("Supabase session check timed out after 3000ms. Forcing loading state to false.");
+        console.warn("Supabase session check timed out. Forcing loading=false.");
         setLoading(false);
       }
-    }, 3000);
+    }, 5000);
 
     return () => {
       mounted = false;

@@ -93,13 +93,8 @@ function AuthPage() {
     }
   };
 
-  if (authLoading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
-        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-      </div>
-    );
-  }
+  // Don't block rendering on auth loading — show the form immediately.
+  // The useEffect above will redirect to /dashboard if a session is found.
 
   return (
     <div className="grid min-h-screen bg-background lg:grid-cols-2">
