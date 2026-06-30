@@ -11,5 +11,6 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist', // Render will look for this output folder
+    cssMinify: 'esbuild',
   }
 })
