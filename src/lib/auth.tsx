@@ -77,10 +77,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (pendingFetchRef.current > 0) return;
       await loadUser(data.session?.user?.id ?? null);
       if (mounted) setLoading(false);
+    }).catch((error) => {
+      console.error("Supabase Auth Error:", error);
+      if (mounted) setLoading(false);
     });
+
+    // IMPLEMENT A 3-SECOND TIMEOUT FALLBACK: Safety net to guarantee spinner drops
+    const fallbackTimer = setTimeout(() => {
+      if (mounted) {
+        console.warn("Supabase session check timed out after 3000ms. Forcing loading state to false.");
+        setLoading(false);
+      }
+    }, 3000);
 
     return () => {
       mounted = false;
+      clearTimeout(fallbackTimer);
       sub.subscription.unsubscribe();
     };
   }, [loadUser]);

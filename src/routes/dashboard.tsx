@@ -22,10 +22,21 @@ function DashboardGate() {
     if (!user) {
       // FIX IDENTITY RACE CONDITION: Wait for Supabase to definitively confirm 
       // the session is empty before aggressively redirecting back to login.
+      // 3-second fallback ensures they never hang on the spinner if the network drops.
+      const fallbackTimer = setTimeout(() => {
+        console.warn("Session check timed out. Forcing redirect to /auth.");
+        navigate({ to: "/auth" });
+      }, 3000);
+
       supabase.auth.getSession().then(({ data }) => {
+        clearTimeout(fallbackTimer);
         if (!data.session) {
           navigate({ to: "/auth" });
         }
+      }).catch((error) => {
+        clearTimeout(fallbackTimer);
+        console.error("Supabase Auth Error:", error);
+        navigate({ to: "/auth" });
       });
       return;
     }
