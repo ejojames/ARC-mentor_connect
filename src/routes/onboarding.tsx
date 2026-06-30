@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
 import { updateUser, type Branch } from "@/lib/db";
@@ -59,28 +59,37 @@ function OnboardingPage() {
   // ── Auth guard ────────────────────────────────────────────────────────────
   // If loading: wait. If not authenticated: send to /auth.
   // If authenticated AND profile already complete: send to /dashboard.
+  const hasCheckedSession = useRef(false);
+
   useEffect(() => {
     if (loading) return;
     if (!user) {
+      if (hasCheckedSession.current) return;
+      hasCheckedSession.current = true;
+
       const fallbackTimer = setTimeout(() => {
         console.warn("Session check timed out. Forcing redirect to /auth.");
-        navigate({ to: "/auth" });
+        if (window.location.pathname !== "/auth") window.location.replace("/auth");
       }, 3000);
 
       supabase.auth.getSession().then(({ data }) => {
         clearTimeout(fallbackTimer);
-        if (!data.session) navigate({ to: "/auth" });
+        if (!data.session) {
+          if (window.location.pathname !== "/auth") window.location.replace("/auth");
+        }
       }).catch((error) => {
         clearTimeout(fallbackTimer);
         console.error("Supabase Auth Error:", error);
-        navigate({ to: "/auth" });
+        if (window.location.pathname !== "/auth") window.location.replace("/auth");
       });
       return;
     }
     if (isProfileComplete(user)) {
-      navigate({ to: "/dashboard" });
+      if (window.location.pathname !== "/dashboard") {
+        window.location.replace("/dashboard");
+      }
     }
-  }, [user, loading, navigate]);
+  }, [user, loading]);
 
   // Pre-populate any existing values so partial completions aren't wiped.
   useEffect(() => {
