@@ -129,7 +129,7 @@ function OnboardingPage() {
       });
       await refresh();
       toast.success("Profile complete — welcome to ARC ATC!");
-      navigate({ to: "/dashboard" });
+      window.location.href = "/dashboard";
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to save profile");
     } finally {
