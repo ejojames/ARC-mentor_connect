@@ -125,6 +125,7 @@ function OnboardingPage() {
         preferred_field: field || null,
         cgpa: cgpaNum,
         semester: semester !== "" ? Number(semester) : null,
+        role: role as any,
       });
       await refresh();
       toast.success("Profile complete — welcome to ARC ATC!");

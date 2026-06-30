@@ -131,11 +131,17 @@ export async function updateUser(
     cgpa: number | null;
     semester: number | null;
     institute: string | null;
+    role: Role;
   }>,
 ): Promise<void> {
   // Use upsert to guarantee that if the profile row is missing (e.g. broken trigger)
-  // it gets created rather than failing silently.
-  const { error } = await supabase.from("profiles").upsert({ id, ...patch }).eq("id", id);
+  // it gets created rather than failing silently. Enforce role constraint.
+  const payload = { 
+    id, 
+    ...patch,
+    role: patch.role || 'STUDENT'
+  };
+  const { error } = await supabase.from("profiles").upsert(payload).eq("id", id);
   if (error) throw new Error(error.message);
 }
 
