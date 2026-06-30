@@ -5,9 +5,8 @@ import {
   createRootRouteWithContext,
   useRouter,
 } from "@tanstack/react-router";
-import { useEffect, type ReactNode } from "react";
+import { useEffect } from "react";
 
-import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { AuthProvider } from "../lib/auth";
 import { ThemeProvider } from "../lib/theme";
@@ -68,6 +67,5 @@ function RootComponent() {
         </AuthProvider>
       </ThemeProvider>
     </QueryClientProvider>
-
   );
 }

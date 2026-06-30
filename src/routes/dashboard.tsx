@@ -1,5 +1,5 @@
 import { createFileRoute, Outlet, useNavigate, Link, useRouterState } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/lib/auth";
 import { Loader2, Menu, X, Compass, ClipboardList, PlusSquare, UserCircle, LayoutDashboard, LogOut } from "lucide-react";
 import { isProfileComplete } from "./onboarding";
