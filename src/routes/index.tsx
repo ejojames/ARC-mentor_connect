@@ -21,7 +21,7 @@ function Landing() {
       <header className="border-b border-border/60">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-5">
           <div className="flex items-center gap-2">
-            <div className="h-7 w-7 rounded-md bg-primary" />
+            <div className="flex h-7 w-7 items-center justify-center rounded-md bg-primary text-primary-foreground font-bold font-display text-lg">A</div>
             <span className="text-sm font-semibold tracking-tight">ARC Alumni Trainee Cell</span>
           </div>
           <div className="flex items-center gap-3">

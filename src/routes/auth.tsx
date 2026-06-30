@@ -126,7 +126,7 @@ function AuthPage() {
     <div className="grid min-h-screen bg-background lg:grid-cols-2">
       <div className="relative hidden border-r border-border bg-card p-12 text-foreground lg:flex lg:flex-col lg:justify-between">
         <Link to="/" className="flex items-center gap-2 text-sm font-medium">
-          <div className="h-6 w-6 rounded-md bg-primary" />
+          <div className="flex h-6 w-6 items-center justify-center rounded-md bg-primary text-primary-foreground font-bold font-display text-base">A</div>
           ARC Alumni Trainee Cell
         </Link>
         <div>
