@@ -14,8 +14,12 @@ function Landing() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!loading && user) navigate({ to: "/dashboard" });
-  }, [user, loading, navigate]);
+    if (!loading && user) {
+      if (window.location.pathname !== "/dashboard") {
+        window.location.replace("/dashboard");
+      }
+    }
+  }, [user, loading]);
 
   return (
     <div className="min-h-screen bg-background">

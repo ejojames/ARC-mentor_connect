@@ -49,10 +49,10 @@ function AuthPage() {
     if (authLoading) return;
     if (user) {
       if (window.location.pathname !== "/dashboard") {
-        navigate({ to: "/dashboard" });
+        window.location.replace("/dashboard");
       }
     }
-  }, [user, authLoading, navigate]);
+  }, [user, authLoading]);
 
   const switchMode = (next: "signin" | "signup") => {
     setMode(next);

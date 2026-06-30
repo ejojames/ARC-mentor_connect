@@ -114,6 +114,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // IMPLEMENT A 3-SECOND TIMEOUT FALLBACK: Safety net to guarantee spinner drops
     const fallbackTimer = setTimeout(() => {
       if (mounted) {
+        if ((window as any).__loop_shield_activated) return;
+        (window as any).__loop_shield_activated = true;
+        
         console.warn("Supabase session check timed out after 3000ms. Forcing loading state to false.");
         setLoading(false);
       }

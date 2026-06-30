@@ -28,7 +28,7 @@ function DashboardGate() {
       const fallbackTimer = setTimeout(() => {
         console.warn("Session check timed out. Forcing redirect to /auth.");
         if (window.location.pathname !== "/auth") {
-          navigate({ to: "/auth" });
+          window.location.replace("/auth");
         }
       }, 3000);
 
@@ -36,14 +36,14 @@ function DashboardGate() {
         clearTimeout(fallbackTimer);
         if (!data.session) {
           if (window.location.pathname !== "/auth") {
-            navigate({ to: "/auth" });
+            window.location.replace("/auth");
           }
         }
       }).catch((error) => {
         clearTimeout(fallbackTimer);
         console.error("Supabase Auth Error:", error);
         if (window.location.pathname !== "/auth") {
-          navigate({ to: "/auth" });
+          window.location.replace("/auth");
         }
       });
       return;
@@ -52,10 +52,10 @@ function DashboardGate() {
     // PRESERVE PROFILE DATA LAYER: Safely route to onboarding instead of booting to login
     if (!isProfileComplete(user)) {
       if (window.location.pathname !== "/onboarding") {
-        navigate({ to: "/onboarding" });
+        window.location.replace("/onboarding");
       }
     }
-  }, [user, loading, navigate]);
+  }, [user, loading]);
 
   if (loading || !user || !isProfileComplete(user)) {
     return (
