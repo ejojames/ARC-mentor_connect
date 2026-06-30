@@ -1,24 +1,30 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { RouterProvider } from "@tanstack/react-router";
-import { getRouter } from "./router";
+import { QueryClient } from "@tanstack/react-query";
+import { createRouter } from "@tanstack/react-router";
+import { routeTree } from "./routeTree.gen";
 import "./styles.css";
 
-const router = getRouter();
+const queryClient = new QueryClient();
 
-// Register the router instance for type safety
+const router = createRouter({
+  routeTree,
+  context: { queryClient },
+  scrollRestoration: true,
+  defaultPreloadStaleTime: 0,
+});
+
 declare module "@tanstack/react-router" {
   interface Register {
     router: typeof router;
   }
 }
 
-const rootElement = document.getElementById("root");
-if (rootElement && !rootElement.innerHTML) {
-  const root = createRoot(rootElement);
-  root.render(
-    <StrictMode>
-      <RouterProvider router={router} />
-    </StrictMode>
-  );
-}
+// Always mount — no SSR hydration guard needed for pure CSR
+const rootElement = document.getElementById("root")!;
+createRoot(rootElement).render(
+  <StrictMode>
+    <RouterProvider router={router} />
+  </StrictMode>
+);
