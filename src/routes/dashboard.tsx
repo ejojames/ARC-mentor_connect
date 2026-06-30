@@ -4,6 +4,7 @@ import { useAuth } from "@/lib/auth";
 import { Loader2, Menu, X, Compass, ClipboardList, PlusSquare, UserCircle, LayoutDashboard, LogOut } from "lucide-react";
 import { isProfileComplete } from "./onboarding";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/dashboard")({
   component: DashboardGate,
@@ -17,10 +18,19 @@ function DashboardGate() {
 
   useEffect(() => {
     if (loading) return;
+    
     if (!user) {
-      navigate({ to: "/auth" });
+      // FIX IDENTITY RACE CONDITION: Wait for Supabase to definitively confirm 
+      // the session is empty before aggressively redirecting back to login.
+      supabase.auth.getSession().then(({ data }) => {
+        if (!data.session) {
+          navigate({ to: "/auth" });
+        }
+      });
       return;
     }
+    
+    // PRESERVE PROFILE DATA LAYER: Safely route to onboarding instead of booting to login
     if (!isProfileComplete(user)) {
       navigate({ to: "/onboarding" });
     }

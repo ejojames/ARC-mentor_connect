@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 
 import { useAuth } from "@/lib/auth";
 import { updateUser } from "@/lib/db";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -33,7 +34,9 @@ function ProfilePage() {
     if (loading) return;
     // No session → go to login.
     if (!user) {
-      navigate({ to: "/auth" });
+      supabase.auth.getSession().then(({ data }) => {
+        if (!data.session) navigate({ to: "/auth" });
+      });
       return;
     }
     // Authenticated but profile incomplete → finish onboarding before editing.

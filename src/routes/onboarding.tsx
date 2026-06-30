@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth";
+import { supabase } from "@/integrations/supabase/client";
 import { updateUser, type Branch } from "@/lib/db";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -61,7 +62,9 @@ function OnboardingPage() {
   useEffect(() => {
     if (loading) return;
     if (!user) {
-      navigate({ to: "/auth" });
+      supabase.auth.getSession().then(({ data }) => {
+        if (!data.session) navigate({ to: "/auth" });
+      });
       return;
     }
     if (isProfileComplete(user)) {
