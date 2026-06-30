@@ -45,18 +45,12 @@ function AuthPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search.mode]);
 
-  const didClearStaleRef = useRef(false);
   useEffect(() => {
     if (authLoading) return;
-    if (!didClearStaleRef.current) {
-      didClearStaleRef.current = true;
-      if (user && search.mode) {
-        void signOut().then(() => refresh());
-        return;
-      }
+    if (user) {
+      navigate({ to: "/dashboard" });
     }
-    if (user && !search.mode) navigate({ to: "/dashboard" });
-  }, [user, authLoading, search.mode, navigate, refresh]);
+  }, [user, authLoading, navigate]);
 
   const switchMode = (next: "signin" | "signup") => {
     setMode(next);
@@ -72,18 +66,10 @@ function AuthPage() {
         if (role === "STUDENT" && !branch) {
           toast.error("Please select your engineering branch"); return;
         }
+        // Email confirmation is DISABLED in Supabase — signUp returns a live session immediately.
         await signUpWithRole({ email, password, full_name: fullName, role });
 
-        // If email confirmation is on, no session yet — sign the user in.
-        const { data: s } = await supabase.auth.getSession();
-        if (!s.session) {
-          try { await signInWithPassword(email, password); } catch {
-            toast.success("Account created", { description: "Check your inbox to confirm your email, then sign in." });
-            switchMode("signin");
-            return;
-          }
-        }
-
+        // Update the student profile with branch/field/cgpa/semester captured during signup.
         const { data: who } = await supabase.auth.getUser();
         const uid = who.user?.id;
         if (uid && role === "STUDENT") {
@@ -100,7 +86,11 @@ function AuthPage() {
         toast.success("Signed in");
       }
       await refresh();
-      navigate({ to: "/dashboard" });
+      // Wait for React to apply the state update from refresh() to the context consumers.
+      // This prevents the route guard in /dashboard from seeing a stale null user and bouncing back.
+      setTimeout(() => {
+        navigate({ to: "/dashboard" });
+      }, 50);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Authentication failed");
     } finally {

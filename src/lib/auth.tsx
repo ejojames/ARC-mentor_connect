@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { getUserById, signOut as dbSignOut, type DBUser, type Role } from "./db";
 
@@ -17,7 +17,13 @@ const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<DBUser | null>(null);
+  // loading starts true and only ever becomes false once we know the initial
+  // session state (including whether a persisted localStorage session exists).
   const [loading, setLoading] = useState(true);
+
+  // Ref to prevent setLoading(false) racing ahead of a deferred profile fetch
+  // triggered by the INITIAL_SESSION event from onAuthStateChange.
+  const pendingFetchRef = useRef(0);
 
   const loadUser = useCallback(async (uid: string | null | undefined) => {
     if (!uid) {
@@ -44,16 +50,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return;
       }
       if (event === "SIGNED_IN" || event === "USER_UPDATED" || event === "INITIAL_SESSION") {
+        // Increment the pending-fetch counter so the getSession() callback
+        // below knows not to mark loading=false prematurely.
+        pendingFetchRef.current += 1;
+        const fetchId = pendingFetchRef.current;
         // Defer the profile fetch so the listener never blocks.
-        setTimeout(() => loadUser(session?.user?.id ?? null), 0);
+        setTimeout(async () => {
+          if (!mounted) return;
+          await loadUser(session?.user?.id ?? null);
+          // Only mark loading done when this is the latest triggered fetch.
+          if (mounted && fetchId === pendingFetchRef.current) {
+            setLoading(false);
+          }
+        }, 0);
       }
     });
 
-    // Bootstrap with any existing session.
+    // Bootstrap with any existing session. If onAuthStateChange fires
+    // INITIAL_SESSION first (which it will with a persisted localStorage token),
+    // the deferred fetch above handles setting loading=false. This fallback
+    // covers the no-session case where INITIAL_SESSION never fires.
     supabase.auth.getSession().then(async ({ data }) => {
       if (!mounted) return;
+      // If a pending fetch from onAuthStateChange is in flight, let that finish
+      // and set loading=false instead of us — avoids double setState.
+      if (pendingFetchRef.current > 0) return;
       await loadUser(data.session?.user?.id ?? null);
-      setLoading(false);
+      if (mounted) setLoading(false);
     });
 
     return () => {

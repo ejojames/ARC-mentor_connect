@@ -69,8 +69,8 @@ const DashboardRoomOpportunityIdRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
-  '/onboarding': typeof OnboardingRoute
   '/dashboard': typeof DashboardRouteWithChildren
+  '/onboarding': typeof OnboardingRoute
   '/dashboard/applications': typeof DashboardApplicationsRoute
   '/dashboard/new': typeof DashboardNewRoute
   '/dashboard/profile': typeof DashboardProfileRoute
@@ -91,8 +91,8 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
-  '/onboarding': typeof OnboardingRoute
   '/dashboard': typeof DashboardRouteWithChildren
+  '/onboarding': typeof OnboardingRoute
   '/dashboard/applications': typeof DashboardApplicationsRoute
   '/dashboard/new': typeof DashboardNewRoute
   '/dashboard/profile': typeof DashboardProfileRoute
@@ -104,8 +104,8 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
-    | '/onboarding'
     | '/dashboard'
+    | '/onboarding'
     | '/dashboard/applications'
     | '/dashboard/new'
     | '/dashboard/profile'
@@ -125,8 +125,8 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/auth'
-    | '/onboarding'
     | '/dashboard'
+    | '/onboarding'
     | '/dashboard/applications'
     | '/dashboard/new'
     | '/dashboard/profile'
@@ -137,8 +137,8 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthRoute: typeof AuthRoute
-  OnboardingRoute: typeof OnboardingRoute
   DashboardRoute: typeof DashboardRouteWithChildren
+  OnboardingRoute: typeof OnboardingRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -232,9 +232,19 @@ const DashboardRouteWithChildren = DashboardRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthRoute: AuthRoute,
-  OnboardingRoute: OnboardingRoute,
   DashboardRoute: DashboardRouteWithChildren,
+  OnboardingRoute: OnboardingRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
