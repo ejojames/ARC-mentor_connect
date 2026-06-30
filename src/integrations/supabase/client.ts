@@ -30,11 +30,11 @@ function createSupabaseFetch(supabaseKey: string): typeof fetch {
 function createSupabaseClient() {
   // Use import.meta.env for client-side (Vite build-time replacement)
   // Fall back to process.env for SSR (server-side rendering)
-  const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://placeholder.supabase.co';
-  const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || 'placeholder-key';
+  const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://uuanfauqefgoeldpfyyp.supabase.co';
+  const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV1YW5mYXVxZWZnb2VsZHBmeXlwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI2MzI3NTMsImV4cCI6MjA5ODIwODc1M30.phw21EVrN_VChjD5x7jzmIz90UJp57SFXandNWiDdLE';
 
   if (!import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY) {
-    console.error("[Supabase] Missing Supabase environment variables. Using placeholder strings to prevent fatal runtime crash.");
+    console.error("[Supabase] Missing environment variables. Using hardcoded fallback connection string to guarantee network operation.");
   }
 
   return createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {

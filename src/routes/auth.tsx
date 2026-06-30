@@ -91,6 +91,14 @@ function AuthPage() {
     }
   };
 
+  if (authLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
   return (
     <div className="grid min-h-screen bg-background lg:grid-cols-2">
       <div className="relative hidden border-r border-border bg-card p-12 text-foreground lg:flex lg:flex-col lg:justify-between">
