@@ -1,16 +1,20 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { isProfileComplete } from "./onboarding";
 import { useEffect, useState } from "react";
 
 import { useAuth } from "@/lib/auth";
-import { updateUser } from "@/lib/db";
-import { supabase } from "@/integrations/supabase/client";
+import { deleteAccount, updateUser } from "@/lib/db";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Lock, Loader2 } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Lock, Loader2, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 
 const SEMESTERS = [1, 2, 3, 4, 5, 6, 7, 8];
@@ -29,30 +33,10 @@ function ProfilePage() {
   const [cgpa, setCgpa] = useState<string>("");
   const [semester, setSemester] = useState<string>("");
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
-    if (loading) return;
-    // No session → go to login.
-    if (!user) {
-      const fallbackTimer = setTimeout(() => {
-        console.warn("Session check timed out. Forcing redirect to /auth.");
-        navigate({ to: "/auth" });
-      }, 3000);
-
-      supabase.auth.getSession().then(({ data }) => {
-        clearTimeout(fallbackTimer);
-        if (!data.session) navigate({ to: "/auth" });
-      }).catch((error) => {
-        clearTimeout(fallbackTimer);
-        console.error("Supabase Auth Error:", error);
-        navigate({ to: "/auth" });
-      });
-      return;
-    }
-    // Authenticated but profile incomplete → finish onboarding before editing.
-    if (!isProfileComplete(user)) {
-      navigate({ to: "/onboarding" });
-    }
+    if (!loading && !user) navigate({ to: "/auth" });
   }, [loading, user, navigate]);
 
   useEffect(() => {
@@ -69,7 +53,8 @@ function ProfilePage() {
   const isStudent = role === "STUDENT";
 
   const cgpaNum = cgpa === "" ? null : Number(cgpa);
-  const cgpaInvalid = cgpa !== "" && (Number.isNaN(cgpaNum!) || (cgpaNum as number) < 0 || (cgpaNum as number) > 10);
+  const cgpaInvalid =
+    cgpa !== "" && (Number.isNaN(cgpaNum!) || (cgpaNum as number) < 0 || (cgpaNum as number) > 10);
 
   const save = async (e?: React.FormEvent) => {
     e?.preventDefault();
@@ -85,7 +70,6 @@ function ProfilePage() {
         institute: institute.trim() || null,
         cgpa: cgpaNum,
         semester: semester !== "" ? Number(semester) : null,
-        role: role as any,
       });
       await refresh();
       toast.success("Profile updated");
@@ -96,110 +80,151 @@ function ProfilePage() {
     }
   };
 
+  const handleDeleteAccount = async () => {
+    if (
+      !window.confirm(
+        "Are you absolutely sure you want to delete your account? This action cannot be undone and all your data will be lost.",
+      )
+    ) {
+      return;
+    }
+    setDeleting(true);
+    try {
+      await deleteAccount();
+      toast.success("Account deleted successfully");
+      navigate({ to: "/auth" });
+    } catch (e) {
+      toast.error("Error deleting account: " + (e as Error).message);
+      setDeleting(false);
+    }
+  };
+
   return (
     <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 sm:py-10">
-        <div className="mb-8">
-          <h1 className="font-display text-3xl sm:text-4xl">Your profile</h1>
-          <p className="mt-2 text-sm text-muted-foreground">Manage your account details.</p>
+      <div className="mb-8">
+        <h1 className="font-display text-3xl sm:text-4xl">Your profile</h1>
+        <p className="mt-2 text-sm text-muted-foreground">Manage your account details.</p>
+      </div>
+
+      <form
+        onSubmit={save}
+        noValidate={false}
+        className="space-y-6 rounded-2xl border border-border bg-card p-6"
+      >
+        <div className="space-y-2">
+          <Label htmlFor="name">Full name</Label>
+          <Input id="name" value={fullName} onChange={(e) => setFullName(e.target.value)} />
         </div>
 
-        <form onSubmit={save} noValidate={false} className="space-y-6 rounded-2xl border border-border bg-card p-6">
-          <div className="space-y-2">
-            <Label htmlFor="name">Full name</Label>
-            <Input id="name" value={fullName} onChange={(e) => setFullName(e.target.value)} />
-          </div>
+        <div className="space-y-2">
+          <Label>Email</Label>
+          <Input value={user.email} disabled className="cursor-not-allowed opacity-70" />
+        </div>
 
-          <div className="space-y-2">
-            <Label>Email</Label>
-            <Input value={user.email} disabled className="cursor-not-allowed opacity-70" />
-          </div>
+        {isStudent && (
+          <>
+            <div className="space-y-2">
+              <Label className="flex items-center gap-1.5">
+                Engineering Branch
+                <Lock className="h-3.5 w-3.5 text-muted-foreground" />
+              </Label>
+              <Input
+                value={user.branch ?? "Not set"}
+                disabled
+                readOnly
+                className="cursor-not-allowed opacity-60"
+              />
+              <p className="text-xs text-amber-500">
+                ⚠️ Branch is locked after account creation and cannot be edited.
+              </p>
+            </div>
 
-          {isStudent && (
-            <>
+            <div className="space-y-2">
+              <Label htmlFor="institute">Current Institute</Label>
+              <Input
+                id="institute"
+                value={institute}
+                onChange={(e) => setInstitute(e.target.value)}
+                placeholder="e.g. ABC Institute of Technology"
+              />
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label className="flex items-center gap-1.5">
-                  Engineering Branch
-                  <Lock className="h-3.5 w-3.5 text-muted-foreground" />
-                </Label>
+                <Label htmlFor="cgpa">Current CGPA</Label>
                 <Input
-                  value={user.branch ?? "Not set"}
-                  disabled
-                  readOnly
-                  className="cursor-not-allowed opacity-60"
+                  id="cgpa"
+                  type="number"
+                  inputMode="decimal"
+                  step="0.01"
+                  min={0}
+                  max={10}
+                  value={cgpa}
+                  onChange={(e) => setCgpa(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (["e", "E", "+", "-"].includes(e.key)) e.preventDefault();
+                  }}
+                  placeholder="8.60"
+                  aria-invalid={cgpaInvalid}
+                  className={cgpaInvalid ? "border-rose-500 focus-visible:ring-rose-500" : ""}
                 />
-                <p className="text-xs text-amber-500">
-                  ⚠️ Branch is locked after account creation and cannot be edited.
+                <p className={`text-xs ${cgpaInvalid ? "text-rose-500" : "text-muted-foreground"}`}>
+                  {cgpaInvalid ? "CGPA must be between 0.00 and 10.00" : "Range: 0.00 – 10.00"}
                 </p>
               </div>
-
               <div className="space-y-2">
-                <Label htmlFor="institute">Current Institute</Label>
-                <Input
-                  id="institute"
-                  value={institute}
-                  onChange={(e) => setInstitute(e.target.value)}
-                  placeholder="e.g. ABC Institute of Technology"
-                />
+                <Label>Current Semester</Label>
+                <Select value={semester} onValueChange={setSemester}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Choose…" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {SEMESTERS.map((s) => (
+                      <SelectItem key={s} value={String(s)}>
+                        {s}
+                        {["st", "nd", "rd"][s - 1] ?? "th"} Semester
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
+            </div>
+          </>
+        )}
 
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="cgpa">Current CGPA</Label>
-                  <Input
-                    id="cgpa"
-                    type="number"
-                    inputMode="decimal"
-                    step="0.01"
-                    min={0}
-                    max={10}
-                    value={cgpa}
-                    onChange={(e) => setCgpa(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (["e", "E", "+", "-"].includes(e.key)) e.preventDefault();
-                    }}
-                    placeholder="8.60"
-                    aria-invalid={cgpaInvalid}
-                    className={cgpaInvalid ? "border-rose-500 focus-visible:ring-rose-500" : ""}
-                  />
-                  <p className={`text-xs ${cgpaInvalid ? "text-rose-500" : "text-muted-foreground"}`}>
-                    {cgpaInvalid ? "CGPA must be between 0.00 and 10.00" : "Range: 0.00 – 10.00"}
-                  </p>
-                </div>
-                <div className="space-y-2">
-                  <Label>Current Semester</Label>
-                  <Select value={semester} onValueChange={setSemester}>
-                    <SelectTrigger><SelectValue placeholder="Choose…" /></SelectTrigger>
-                    <SelectContent>
-                      {SEMESTERS.map((s) => (
-                        <SelectItem key={s} value={String(s)}>
-                          {s}{["st","nd","rd"][s-1] ?? "th"} Semester
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-            </>
-          )}
+        <div className="space-y-2">
+          <Label htmlFor="bio">Bio</Label>
+          <Textarea
+            id="bio"
+            value={bio}
+            onChange={(e) => setBio(e.target.value)}
+            rows={4}
+            placeholder="Tell us a little about yourself…"
+          />
+        </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="bio">Bio</Label>
-            <Textarea
-              id="bio"
-              value={bio}
-              onChange={(e) => setBio(e.target.value)}
-              rows={4}
-              placeholder="Tell us a little about yourself…"
-            />
-          </div>
+        <div className="flex justify-end">
+          <Button type="submit" disabled={saving || cgpaInvalid}>
+            {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            Save changes
+          </Button>
+        </div>
+      </form>
 
-          <div className="flex justify-end">
-            <Button type="submit" disabled={saving || cgpaInvalid}>
-              {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Save changes
-            </Button>
-          </div>
-        </form>
+      <div className="mt-8 rounded-2xl border border-destructive/20 bg-destructive/5 p-6">
+        <div className="flex items-center gap-2 mb-4">
+          <AlertTriangle className="h-5 w-5 text-destructive" />
+          <h2 className="text-xl font-medium text-destructive">Danger Zone</h2>
+        </div>
+        <p className="text-sm text-foreground/80 mb-6">
+          Once you delete your account, there is no going back. Please be certain. All your data,
+          applications, and opportunities will be permanently removed.
+        </p>
+        <Button variant="destructive" onClick={handleDeleteAccount} disabled={deleting}>
+          {deleting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          Delete my account
+        </Button>
+      </div>
     </div>
   );
 }

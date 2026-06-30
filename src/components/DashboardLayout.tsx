@@ -2,7 +2,14 @@ import { type ReactNode } from "react";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useAuth } from "@/lib/auth";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { LayoutDashboard, LogOut, Compass, ClipboardList, PlusSquare, UserCircle } from "lucide-react";
+import {
+  LayoutDashboard,
+  LogOut,
+  Compass,
+  ClipboardList,
+  PlusSquare,
+  UserCircle,
+} from "lucide-react";
 
 export function DashboardLayout({ children }: { children: ReactNode }) {
   const { profile, role, signOut } = useAuth();
@@ -22,7 +29,11 @@ export function DashboardLayout({ children }: { children: ReactNode }) {
   const nav = role === "MENTOR" ? mentorNav : studentNav;
 
   const initials = (profile?.full_name || profile?.email || "?")
-    .split(" ").map((s) => s[0]).join("").slice(0, 2).toUpperCase();
+    .split(" ")
+    .map((s) => s[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
 
   const handleSignOut = async () => {
     await signOut();
@@ -35,7 +46,9 @@ export function DashboardLayout({ children }: { children: ReactNode }) {
       <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r border-sidebar-border bg-sidebar p-4 lg:flex">
         <div className="flex items-center justify-between px-2 py-2">
           <Link to="/dashboard" className="flex items-center gap-2">
-            <div className="h-7 w-7 rounded-md bg-primary" />
+            <div className="flex h-7 w-7 items-center justify-center rounded-md bg-primary text-primary-foreground font-bold font-display text-lg">
+              A
+            </div>
             <span className="text-sm font-semibold tracking-tight">ARC ATC</span>
           </Link>
           <ThemeToggle />
@@ -63,7 +76,9 @@ export function DashboardLayout({ children }: { children: ReactNode }) {
 
         <div className="border-t border-sidebar-border pt-4">
           <div className="flex items-center gap-3 px-2 py-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground">{initials}</div>
+            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground">
+              {initials}
+            </div>
             <div className="min-w-0 flex-1">
               <div className="truncate text-sm font-medium">{profile?.full_name || "User"}</div>
               <div className="truncate text-xs text-muted-foreground">{profile?.email}</div>
@@ -82,13 +97,19 @@ export function DashboardLayout({ children }: { children: ReactNode }) {
         {/* Mobile top bar */}
         <div className="sticky top-0 z-30 flex items-center justify-between border-b border-border bg-background/80 px-4 py-3 backdrop-blur lg:hidden">
           <Link to="/dashboard" className="flex items-center gap-2">
-            <div className="h-6 w-6 rounded-md bg-primary" />
+            <div className="flex h-6 w-6 items-center justify-center rounded-md bg-primary text-primary-foreground font-bold font-display text-base">
+              A
+            </div>
             <span className="text-sm font-semibold tracking-tight">ARC ATC</span>
           </Link>
           <div className="flex items-center gap-2">
             <span className="status-pill bg-muted text-muted-foreground">{role ?? "—"}</span>
             <ThemeToggle />
-            <button onClick={handleSignOut} aria-label="Sign out" className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-border bg-card hover:bg-accent hover:text-accent-foreground transition">
+            <button
+              onClick={handleSignOut}
+              aria-label="Sign out"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-border bg-card hover:bg-accent hover:text-accent-foreground transition"
+            >
               <LogOut className="h-4 w-4" />
             </button>
           </div>

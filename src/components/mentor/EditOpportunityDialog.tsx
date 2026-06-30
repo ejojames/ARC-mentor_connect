@@ -1,25 +1,54 @@
 import { useEffect, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
-import { deleteOpportunity, updateOpportunity, type Branch, type DBOpportunity, type OppType } from "@/lib/db";
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
+  deleteOpportunity,
+  updateOpportunity,
+  type Branch,
+  type DBOpportunity,
+  type OppType,
+} from "@/lib/db";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
 } from "@/components/ui/dialog";
 import {
-  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
-  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader,
-  AlertDialogTitle, AlertDialogTrigger,
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Check, Loader2, Pencil, ShieldCheck, Trash2, Zap } from "lucide-react";
 import { toast } from "sonner";
 
-const DOMAINS = ["Web Dev", "Core Electronics", "Placements", "Higher Studies", "Entrepreneurship"] as const;
+const DOMAINS = [
+  "Web Dev",
+  "Core Electronics",
+  "Placements",
+  "Higher Studies",
+  "Entrepreneurship",
+] as const;
 const BRANCHES: Branch[] = ["ECE", "CSE", "Mechanical", "CU", "EB"];
 const OPP_TYPES: OppType[] = ["Mentorship", "Internship", "Other"];
 const SEMESTERS = [1, 2, 3, 4, 5, 6, 7, 8];
@@ -42,8 +71,14 @@ export function EditOpportunityButton({ opp }: { opp: DBOpportunity }) {
 }
 
 function EditOpportunityDialog({
-  opp, open, onOpenChange,
-}: { opp: DBOpportunity; open: boolean; onOpenChange: (v: boolean) => void }) {
+  opp,
+  open,
+  onOpenChange,
+}: {
+  opp: DBOpportunity;
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+}) {
   const qc = useQueryClient();
   const navigate = useNavigate();
   const [title, setTitle] = useState(opp.title);
@@ -54,9 +89,13 @@ function EditOpportunityDialog({
   const [customEligibility, setCustomEligibility] = useState(!!opp.custom_eligibility);
   const [minCgpa, setMinCgpa] = useState<string>(opp.min_cgpa != null ? String(opp.min_cgpa) : "");
   const [allowedBranches, setAllowedBranches] = useState<Branch[]>(opp.allowed_branches ?? []);
-  const [minSemester, setMinSemester] = useState<string>(opp.min_semester != null ? String(opp.min_semester) : "");
+  const [minSemester, setMinSemester] = useState<string>(
+    opp.min_semester != null ? String(opp.min_semester) : "",
+  );
   const [autoAccept, setAutoAccept] = useState(!!opp.auto_accept);
-  const [autoAcceptCap, setAutoAcceptCap] = useState<string>(opp.auto_accept_cap != null ? String(opp.auto_accept_cap) : "");
+  const [autoAcceptCap, setAutoAcceptCap] = useState<string>(
+    opp.auto_accept_cap != null ? String(opp.auto_accept_cap) : "",
+  );
 
   useEffect(() => {
     if (!open) return;
@@ -120,28 +159,53 @@ function EditOpportunityDialog({
       <DialogContent className="max-h-[90vh] w-[calc(100vw-2rem)] max-w-2xl overflow-y-auto bg-card sm:w-full">
         <DialogHeader>
           <DialogTitle className="font-display text-2xl">Edit Program</DialogTitle>
-          <DialogDescription>Update any field. Changes sync instantly across the room and student feed.</DialogDescription>
+          <DialogDescription>
+            Update any field. Changes sync instantly across the room and student feed.
+          </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={(e) => { e.preventDefault(); save.mutate(); }} className="space-y-5">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            save.mutate();
+          }}
+          className="space-y-5"
+        >
           <div className="space-y-2">
             <Label htmlFor="edit-title">Title</Label>
-            <Input id="edit-title" value={title} onChange={(e) => setTitle(e.target.value)} required />
+            <Input
+              id="edit-title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              required
+            />
           </div>
 
           <div className="space-y-2">
             <Label>Opportunity Type</Label>
             <Select value={oppType} onValueChange={(v) => setOppType(v as OppType)}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
               <SelectContent>
-                {OPP_TYPES.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                {OPP_TYPES.map((t) => (
+                  <SelectItem key={t} value={t}>
+                    {t}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="edit-description">Description</Label>
-            <Textarea id="edit-description" value={description} onChange={(e) => setDescription(e.target.value)} rows={5} required />
+            <Textarea
+              id="edit-description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows={5}
+              required
+            />
           </div>
 
           <div className="space-y-2">
@@ -165,7 +229,12 @@ function EditOpportunityDialog({
 
           <div className="space-y-2">
             <Label htmlFor="edit-criteria">Participation Criteria</Label>
-            <Textarea id="edit-criteria" value={criteria} onChange={(e) => setCriteria(e.target.value)} rows={3} />
+            <Textarea
+              id="edit-criteria"
+              value={criteria}
+              onChange={(e) => setCriteria(e.target.value)}
+              rows={3}
+            />
           </div>
 
           <div className="rounded-xl border border-border bg-background/40 p-4">
@@ -188,14 +257,30 @@ function EditOpportunityDialog({
               <div className="mt-4 grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
                   <Label htmlFor="edit-cgpa">Minimum CGPA</Label>
-                  <Input id="edit-cgpa" type="number" min={0} max={10} step="0.1" value={minCgpa} onChange={(e) => setMinCgpa(e.target.value)} placeholder="e.g. 8.5" />
+                  <Input
+                    id="edit-cgpa"
+                    type="number"
+                    min={0}
+                    max={10}
+                    step="0.1"
+                    value={minCgpa}
+                    onChange={(e) => setMinCgpa(e.target.value)}
+                    placeholder="e.g. 8.5"
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label>Minimum Semester</Label>
                   <Select value={minSemester} onValueChange={setMinSemester}>
-                    <SelectTrigger><SelectValue placeholder="Choose…" /></SelectTrigger>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Choose…" />
+                    </SelectTrigger>
                     <SelectContent>
-                      {SEMESTERS.map((s) => <SelectItem key={s} value={String(s)}>{s}{["st","nd","rd"][s-1] ?? "th"} Semester</SelectItem>)}
+                      {SEMESTERS.map((s) => (
+                        <SelectItem key={s} value={String(s)}>
+                          {s}
+                          {["st", "nd", "rd"][s - 1] ?? "th"} Semester
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -216,7 +301,9 @@ function EditOpportunityDialog({
                       );
                     })}
                   </div>
-                  <p className="text-xs text-muted-foreground">Leave empty to allow all branches.</p>
+                  <p className="text-xs text-muted-foreground">
+                    Leave empty to allow all branches.
+                  </p>
                 </div>
               </div>
             )}
@@ -238,7 +325,14 @@ function EditOpportunityDialog({
             {autoAccept && (
               <div className="mt-4 space-y-2">
                 <Label htmlFor="edit-cap">Maximum Auto-Accept Cap</Label>
-                <Input id="edit-cap" type="number" min={1} value={autoAcceptCap} onChange={(e) => setAutoAcceptCap(e.target.value)} placeholder="e.g. 50" />
+                <Input
+                  id="edit-cap"
+                  type="number"
+                  min={1}
+                  value={autoAcceptCap}
+                  onChange={(e) => setAutoAcceptCap(e.target.value)}
+                  placeholder="e.g. 50"
+                />
               </div>
             )}
           </div>
@@ -259,19 +353,26 @@ function EditOpportunityDialog({
                 <AlertDialogHeader>
                   <AlertDialogTitle>Delete this program?</AlertDialogTitle>
                   <AlertDialogDescription>
-                    This permanently removes <span className="font-medium text-foreground">{opp.title}</span>, all its applications, and every announcement in its room. This cannot be undone.
+                    This permanently removes{" "}
+                    <span className="font-medium text-foreground">{opp.title}</span>, all its
+                    applications, and every announcement in its room. This cannot be undone.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                   <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={() => del.mutate()} className="bg-rose-500 text-white hover:bg-rose-600">
+                  <AlertDialogAction
+                    onClick={() => del.mutate()}
+                    className="bg-rose-500 text-white hover:bg-rose-600"
+                  >
                     Delete permanently
                   </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>
             <div className="flex gap-2">
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+                Cancel
+              </Button>
               <Button type="submit" disabled={save.isPending}>
                 {save.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Save Changes

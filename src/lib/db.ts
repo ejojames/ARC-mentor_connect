@@ -61,7 +61,7 @@ export interface DBAnnouncement {
   created_at: string;
 }
 
-const wrap = <T,>(p: Promise<{ data: T | null; error: { message: string } | null }>): Promise<T> =>
+const wrap = <T>(p: Promise<{ data: T | null; error: { message: string } | null }>): Promise<T> =>
   p.then(({ data, error }) => {
     if (error) throw new Error(error.message);
     return data as T;
@@ -102,7 +102,7 @@ export async function signUpWithRole(input: {
 export async function getUserById(id: string): Promise<DBUser | null> {
   const [{ data: p, error: pe }, { data: r, error: re }] = await Promise.all([
     supabase.from("profiles").select("*").eq("id", id).maybeSingle(),
-    supabase.from("user_roles").select("role").eq("user_id", id).maybeSingle(),
+    supabase.from("user_roles").select("role").eq("id", id).maybeSingle(),
   ]);
   if (pe) throw new Error(pe.message);
   if (re) throw new Error(re.message);
@@ -123,31 +123,28 @@ export async function getUserById(id: string): Promise<DBUser | null> {
 
 export async function updateUser(
   id: string,
-  patch: Partial<{
-    full_name: string;
-    bio: string;
-    branch: Branch | null;
-    preferred_field: string | null;
-    cgpa: number | null;
-    semester: number | null;
-    institute: string | null;
-    role: Role;
-  }>,
+  updates: {
+    full_name?: string;
+    bio?: string;
+    institute?: string | null;
+    cgpa?: number | null;
+    semester?: number | null;
+  },
 ): Promise<void> {
-  // Use upsert to guarantee that if the profile row is missing (e.g. broken trigger)
-  // it gets created rather than failing silently. Enforce role constraint.
-  const payload = { 
-    id, 
-    ...patch,
-    role: patch.role || 'STUDENT'
-  };
-  const { error } = await supabase.from("profiles").upsert(payload).eq("id", id);
+  const { error } = await supabase.from("profiles").update(updates).eq("id", id);
   if (error) throw new Error(error.message);
+}
+
+export async function deleteAccount(): Promise<void> {
+  const { error } = await supabase.rpc("delete_user");
+  if (error) throw new Error(error.message);
+  await supabase.auth.signOut();
 }
 
 // ---------- OPPORTUNITIES ----------
 type OppRow = Awaited<ReturnType<typeof supabase.from>>;
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function mapOpp(o: any): DBOpportunity {
   return {
     id: o.id,
@@ -189,7 +186,11 @@ export async function listMentorOpportunities(mentorId: string): Promise<DBOppor
 }
 
 export async function getOpportunityById(id: string): Promise<DBOpportunity | null> {
-  const { data, error } = await supabase.from("opportunities").select("*").eq("id", id).maybeSingle();
+  const { data, error } = await supabase
+    .from("opportunities")
+    .select("*")
+    .eq("id", id)
+    .maybeSingle();
   if (error) throw new Error(error.message);
   return data ? mapOpp(data) : null;
 }
@@ -216,7 +217,9 @@ export async function createOpportunity(input: {
       title: input.title,
       description: input.description,
       criteria: input.criteria,
-      domain_tags: input.domain_tags,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      domain_tags: input.domain_tags as any,
       status: input.status ?? "OPEN",
       opp_type: input.opp_type,
       custom_eligibility: input.custom_eligibility,
@@ -225,6 +228,7 @@ export async function createOpportunity(input: {
       min_semester: input.custom_eligibility ? input.min_semester : null,
       auto_accept: input.auto_accept,
       auto_accept_cap: input.auto_accept ? input.auto_accept_cap : null,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any)
     .select("*")
     .single();
@@ -258,7 +262,10 @@ export async function updateOpportunity(
   if (patch.auto_accept === false) {
     sanitized.auto_accept_cap = null;
   }
-  const { error } = await supabase.from("opportunities").update(sanitized as never).eq("id", id);
+  const { error } = await supabase
+    .from("opportunities")
+    .update(sanitized as never)
+    .eq("id", id);
   if (error) throw new Error(error.message);
 }
 
@@ -269,6 +276,7 @@ export async function deleteOpportunity(id: string): Promise<void> {
 }
 
 // ---------- APPLICATIONS ----------
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function mapApp(a: any): DBApplication {
   return {
     id: a.id,
@@ -297,6 +305,7 @@ export async function applyToOpportunity(input: {
       student_id: input.student_id,
       student_name: input.student_name,
       statement: input.statement_of_purpose,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any)
     .select("*")
     .single();
@@ -314,7 +323,9 @@ export async function updateApplicationStatus(id: string, status: AppStatus): Pr
   if (error) throw new Error(error.message);
 }
 
-export async function getApplicationsForOpportunity(opportunityId: string): Promise<DBApplication[]> {
+export async function getApplicationsForOpportunity(
+  opportunityId: string,
+): Promise<DBApplication[]> {
   const { data, error } = await supabase
     .from("applications")
     .select("*")
@@ -369,7 +380,9 @@ export async function getProfilesByIds(ids: string[]): Promise<Map<string, DBUse
 }
 
 // ---------- ANNOUNCEMENTS ----------
-export async function getAnnouncementsForOpportunity(opportunityId: string): Promise<DBAnnouncement[]> {
+export async function getAnnouncementsForOpportunity(
+  opportunityId: string,
+): Promise<DBAnnouncement[]> {
   const { data, error } = await supabase
     .from("announcements")
     .select("*")

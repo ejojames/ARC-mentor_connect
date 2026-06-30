@@ -1,9 +1,22 @@
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { updateUser, type Branch } from "@/lib/db";
 import { useAuth } from "@/lib/auth";
 import { Check, Sparkles, Loader2 } from "lucide-react";
@@ -23,9 +36,13 @@ export function StudentOnboarding({ open }: { open: boolean }) {
 
   const submit = async () => {
     if (!user) return;
-    if (!branch) { toast.error("Please select your engineering branch"); return; }
+    if (!branch) {
+      toast.error("Please select your engineering branch");
+      return;
+    }
     if (cgpa !== "" && (Number(cgpa) < 0 || Number(cgpa) > 10)) {
-      toast.error("CGPA must be between 0 and 10"); return;
+      toast.error("CGPA must be between 0 and 10");
+      return;
     }
     setSaving(true);
     try {
@@ -73,7 +90,9 @@ export function StudentOnboarding({ open }: { open: boolean }) {
               </SelectTrigger>
               <SelectContent>
                 {BRANCHES.map((b) => (
-                  <SelectItem key={b} value={b}>{b}</SelectItem>
+                  <SelectItem key={b} value={b}>
+                    {b}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -85,14 +104,29 @@ export function StudentOnboarding({ open }: { open: boolean }) {
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <Label className="text-sm">Current CGPA</Label>
-              <Input type="number" step="0.01" min={0} max={10} value={cgpa} onChange={(e) => setCgpa(e.target.value)} placeholder="e.g. 8.6" />
+              <Input
+                type="number"
+                step="0.01"
+                min={0}
+                max={10}
+                value={cgpa}
+                onChange={(e) => setCgpa(e.target.value)}
+                placeholder="e.g. 8.6"
+              />
             </div>
             <div className="space-y-2">
               <Label className="text-sm">Current Semester</Label>
               <Select value={semester} onValueChange={setSemester}>
-                <SelectTrigger><SelectValue placeholder="Choose…" /></SelectTrigger>
+                <SelectTrigger>
+                  <SelectValue placeholder="Choose…" />
+                </SelectTrigger>
                 <SelectContent>
-                  {SEMESTERS.map((s) => <SelectItem key={s} value={String(s)}>{s}{["st","nd","rd"][s-1] ?? "th"} Semester</SelectItem>)}
+                  {SEMESTERS.map((s) => (
+                    <SelectItem key={s} value={String(s)}>
+                      {s}
+                      {["st", "nd", "rd"][s - 1] ?? "th"} Semester
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -100,7 +134,8 @@ export function StudentOnboarding({ open }: { open: boolean }) {
 
           <div className="space-y-2">
             <Label className="text-sm">
-              Preferred Mentorship Field <span className="text-muted-foreground text-xs font-normal">(optional)</span>
+              Preferred Mentorship Field{" "}
+              <span className="text-muted-foreground text-xs font-normal">(optional)</span>
             </Label>
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
               {FIELDS.map((f) => {
@@ -123,17 +158,15 @@ export function StudentOnboarding({ open }: { open: boolean }) {
               })}
             </div>
             {!field && (
-              <p className="text-xs text-muted-foreground">Skip if you're not sure yet — you can set this later.</p>
+              <p className="text-xs text-muted-foreground">
+                Skip if you're not sure yet — you can set this later.
+              </p>
             )}
           </div>
         </div>
 
         <DialogFooter>
-          <Button
-            onClick={submit}
-            disabled={saving || !branch}
-            className="w-full"
-          >
+          <Button onClick={submit} disabled={saving || !branch} className="w-full">
             {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Get Started
           </Button>

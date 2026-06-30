@@ -3,23 +3,46 @@ import { useState, useTransition } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/lib/auth";
 import {
-  getOpportunityById, getUserById, getApplicationsForOpportunity,
-  getApplicationsForStudent, getAnnouncementsForOpportunity, getProfilesByIds,
-  createAnnouncement, deleteAnnouncement, updateApplicationStatus,
-  type DBOpportunity, type DBUser,
+  getOpportunityById,
+  getUserById,
+  getApplicationsForOpportunity,
+  getApplicationsForStudent,
+  getAnnouncementsForOpportunity,
+  getProfilesByIds,
+  createAnnouncement,
+  deleteAnnouncement,
+  updateApplicationStatus,
+  type DBOpportunity,
+  type DBUser,
 } from "@/lib/db";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { StatusPill } from "@/components/StatusPill";
 import {
-  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
-  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader,
-  AlertDialogTitle, AlertDialogTrigger,
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import {
-  ArrowLeft, Megaphone, Users, UserMinus, Send, Trash2, Mail,
-  Lock, Tag, ListChecks, Loader2, Download,
+  ArrowLeft,
+  Megaphone,
+  Users,
+  UserMinus,
+  Send,
+  Trash2,
+  Mail,
+  Lock,
+  Tag,
+  ListChecks,
+  Loader2,
+  Download,
 } from "lucide-react";
 import { toast } from "sonner";
 import { EditOpportunityButton } from "@/components/mentor/EditOpportunityDialog";
@@ -51,14 +74,22 @@ function ProgramRoom() {
   });
 
   if (loading || oppLoading) {
-    return <div className="flex min-h-[60vh] items-center justify-center"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>;
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+      </div>
+    );
   }
 
   if (!opp) {
     return (
       <div className="mx-auto max-w-3xl px-6 py-16 text-center">
         <p className="text-sm text-muted-foreground">This program room no longer exists.</p>
-        <Link to="/dashboard"><Button variant="outline" className="mt-4">Back to dashboard</Button></Link>
+        <Link to="/dashboard">
+          <Button variant="outline" className="mt-4">
+            Back to dashboard
+          </Button>
+        </Link>
       </div>
     );
   }
@@ -66,7 +97,10 @@ function ProgramRoom() {
   let access: "mentor" | "student" | "denied" = "denied";
   if (user) {
     if (user.role === "MENTOR" && opp.mentor_id === user.id) access = "mentor";
-    else if (user.role === "STUDENT" && studentApps?.some((a) => a.opportunity_id === opportunityId && a.status === "ACCEPTED")) {
+    else if (
+      user.role === "STUDENT" &&
+      studentApps?.some((a) => a.opportunity_id === opportunityId && a.status === "ACCEPTED")
+    ) {
       access = "student";
     }
   }
@@ -76,8 +110,13 @@ function ProgramRoom() {
       <div className="mx-auto max-w-3xl px-6 py-16 text-center">
         <Lock className="mx-auto h-8 w-8 text-muted-foreground" />
         <h2 className="mt-4 font-display text-2xl">Access revoked</h2>
-        <p className="mt-2 text-sm text-muted-foreground">You no longer have access to this Program Room. If you believe this is a mistake, contact the mentor.</p>
-        <Button className="mt-6" onClick={() => navigate({ to: "/dashboard" })}>Back to dashboard</Button>
+        <p className="mt-2 text-sm text-muted-foreground">
+          You no longer have access to this Program Room. If you believe this is a mistake, contact
+          the mentor.
+        </p>
+        <Button className="mt-6" onClick={() => navigate({ to: "/dashboard" })}>
+          Back to dashboard
+        </Button>
       </div>
     );
   }
@@ -101,10 +140,20 @@ function ProgramRoom() {
               <StatusPill status={opp.status} />
               <span className="text-muted-foreground">Room · {opp.id.slice(0, 8)}</span>
             </div>
-            <h1 className="mt-3 font-display text-xl sm:text-3xl tracking-tight break-words">{opp.title}</h1>
+            <h1 className="mt-3 font-display text-xl sm:text-3xl tracking-tight break-words">
+              {opp.title}
+            </h1>
             <p className="mt-1 text-sm text-muted-foreground break-words">
               Hosted by <span className="text-foreground">{mentor?.full_name ?? "Mentor"}</span>
-              {mentor?.email && <> · <a href={`mailto:${mentor.email}`} className="hover:text-foreground">{mentor.email}</a></>}
+              {mentor?.email && (
+                <>
+                  {" "}
+                  ·{" "}
+                  <a href={`mailto:${mentor.email}`} className="hover:text-foreground">
+                    {mentor.email}
+                  </a>
+                </>
+              )}
             </p>
           </div>
           {access === "mentor" && <EditOpportunityButton opp={opp} />}
@@ -130,8 +179,14 @@ function MentorRoom({ opp, mentorId }: { opp: DBOpportunity; mentorId: string })
 }
 
 function BroadcastCenter({
-  opp, mentorId, canPost,
-}: { opp: DBOpportunity; mentorId: string; canPost: boolean }) {
+  opp,
+  mentorId,
+  canPost,
+}: {
+  opp: DBOpportunity;
+  mentorId: string;
+  canPost: boolean;
+}) {
   const qc = useQueryClient();
   const { data: announcements } = useQuery({
     queryKey: ["announcements", opp.id],
@@ -148,7 +203,8 @@ function BroadcastCenter({
       await createAnnouncement({ opportunity_id: opp.id, mentor_id: mentorId, title, body });
     },
     onSuccess: () => {
-      setTitle(""); setBody("");
+      setTitle("");
+      setBody("");
       qc.invalidateQueries({ queryKey: ["announcements", opp.id] });
       toast.success("Broadcast sent to this cohort");
     },
@@ -170,7 +226,8 @@ function BroadcastCenter({
         <h2 className="text-sm font-semibold uppercase tracking-wider">Broadcast Center</h2>
       </div>
       <p className="mt-1 text-xs text-muted-foreground">
-        Notices here are visible <span className="text-foreground">only</span> to participants in this room.
+        Notices here are visible <span className="text-foreground">only</span> to participants in
+        this room.
       </p>
 
       {canPost && (
@@ -200,7 +257,10 @@ function BroadcastCenter({
 
       <div className="mt-6 space-y-3">
         <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-          Timeline {announcements && announcements.length > 0 && <span className="text-foreground">({announcements.length})</span>}
+          Timeline{" "}
+          {announcements && announcements.length > 0 && (
+            <span className="text-foreground">({announcements.length})</span>
+          )}
         </div>
         {(!announcements || announcements.length === 0) && (
           <div className="rounded-xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
@@ -208,12 +268,20 @@ function BroadcastCenter({
           </div>
         )}
         {announcements?.map((a) => (
-          <article key={a.id} className="group rounded-xl border border-border bg-background/40 p-4 animate-in fade-in duration-200">
+          <article
+            key={a.id}
+            className="group rounded-xl border border-border bg-background/40 p-4 animate-in fade-in duration-200"
+          >
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
                 <h3 className="text-sm font-semibold">{a.title}</h3>
                 <div className="text-[11px] uppercase tracking-wider text-muted-foreground">
-                  {new Date(a.created_at).toLocaleString(undefined, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
+                  {new Date(a.created_at).toLocaleString(undefined, {
+                    day: "numeric",
+                    month: "short",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
                 </div>
               </div>
               {canPost && (
@@ -226,7 +294,9 @@ function BroadcastCenter({
                 </button>
               )}
             </div>
-            <p className="mt-2 whitespace-pre-wrap text-sm text-foreground/80 break-words">{a.body}</p>
+            <p className="mt-2 whitespace-pre-wrap text-sm text-foreground/80 break-words">
+              {a.body}
+            </p>
           </article>
         ))}
       </div>
@@ -276,7 +346,15 @@ function CohortRoster({ opp, canManage }: { opp: DBOpportunity; canManage: boole
     const header = ["Student Name", "Email", "Branch", "Semester", "CGPA"];
     const body = accepted.map((a) => {
       const u = profileMap?.get(a.student_id);
-      return [u?.full_name ?? a.student_name ?? "", u?.email ?? "", u?.branch ?? "", u?.semester ?? "", u?.cgpa ?? ""].map(escape).join(",");
+      return [
+        u?.full_name ?? a.student_name ?? "",
+        u?.email ?? "",
+        u?.branch ?? "",
+        u?.semester ?? "",
+        u?.cgpa ?? "",
+      ]
+        .map(escape)
+        .join(",");
     });
     const csv = [header.join(","), ...body].join("\r\n");
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
@@ -324,15 +402,24 @@ function CohortRoster({ opp, canManage }: { opp: DBOpportunity; canManage: boole
         {accepted.map((app) => {
           const u = profileMap?.get(app.student_id);
           return (
-            <div key={app.id} className="flex items-center justify-between gap-3 rounded-xl border border-border bg-background/40 p-4">
+            <div
+              key={app.id}
+              className="flex items-center justify-between gap-3 rounded-xl border border-border bg-background/40 p-4"
+            >
               <div className="min-w-0">
-                <div className="truncate text-sm font-medium">{app.student_name || u?.full_name || "Unknown"}</div>
+                <div className="truncate text-sm font-medium">
+                  {app.student_name || u?.full_name || "Unknown"}
+                </div>
                 <div className="truncate text-xs text-muted-foreground">{u?.email ?? ""}</div>
               </div>
               {canManage && (
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
-                    <Button size="sm" variant="outline" className="border-rose-500/40 text-rose-500 hover:bg-rose-500/10 hover:text-rose-500">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="border-rose-500/40 text-rose-500 hover:bg-rose-500/10 hover:text-rose-500"
+                    >
                       <UserMinus className="mr-1 h-3.5 w-3.5" /> Remove
                     </Button>
                   </AlertDialogTrigger>
@@ -340,12 +427,17 @@ function CohortRoster({ opp, canManage }: { opp: DBOpportunity; canManage: boole
                     <AlertDialogHeader>
                       <AlertDialogTitle>Remove participant?</AlertDialogTitle>
                       <AlertDialogDescription>
-                        Are you sure you want to remove <span className="font-medium text-foreground">{app.student_name}</span> from this program? Their access to this room will be revoked immediately.
+                        Are you sure you want to remove{" "}
+                        <span className="font-medium text-foreground">{app.student_name}</span> from
+                        this program? Their access to this room will be revoked immediately.
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                       <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction onClick={() => remove.mutate(app.id)} className="bg-rose-500 text-white hover:bg-rose-600">
+                      <AlertDialogAction
+                        onClick={() => remove.mutate(app.id)}
+                        className="bg-rose-500 text-white hover:bg-rose-600"
+                      >
                         Remove
                       </AlertDialogAction>
                     </AlertDialogFooter>
@@ -375,7 +467,9 @@ function StudentRoom({ opp, mentor }: { opp: DBOpportunity; mentor: DBUser | nul
               </div>
               <div className="mt-2 flex flex-wrap gap-1.5">
                 {opp.domain_tags.map((t) => (
-                  <span key={t} className="rounded-full bg-muted px-2.5 py-0.5 text-xs">{t}</span>
+                  <span key={t} className="rounded-full bg-muted px-2.5 py-0.5 text-xs">
+                    {t}
+                  </span>
                 ))}
               </div>
             </div>
@@ -386,20 +480,30 @@ function StudentRoom({ opp, mentor }: { opp: DBOpportunity; mentor: DBUser | nul
               <div className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider text-muted-foreground">
                 <ListChecks className="h-3.5 w-3.5" /> Criteria
               </div>
-              <p className="mt-2 whitespace-pre-wrap text-sm text-foreground/80 break-words">{opp.criteria}</p>
+              <p className="mt-2 whitespace-pre-wrap text-sm text-foreground/80 break-words">
+                {opp.criteria}
+              </p>
             </div>
           )}
 
           {opp.description && (
             <div>
-              <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">About</div>
-              <p className="mt-2 whitespace-pre-wrap text-sm text-foreground/80 break-words">{opp.description}</p>
+              <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                About
+              </div>
+              <p className="mt-2 whitespace-pre-wrap text-sm text-foreground/80 break-words">
+                {opp.description}
+              </p>
             </div>
           )}
 
           <div className="border-t border-border pt-5">
             <a
-              href={mentor?.email ? `mailto:${mentor.email}?subject=${encodeURIComponent(`[${opp.title}] Question`)}` : "#"}
+              href={
+                mentor?.email
+                  ? `mailto:${mentor.email}?subject=${encodeURIComponent(`[${opp.title}] Question`)}`
+                  : "#"
+              }
               className={mentor?.email ? "" : "pointer-events-none opacity-50"}
             >
               <Button className="w-full" variant="outline">

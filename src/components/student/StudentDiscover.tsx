@@ -2,26 +2,49 @@ import { useEffect, useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/lib/auth";
 import {
-  listOpenOpportunities, getProfilesByIds, applyToOpportunity,
-  getApplicationsForStudent, getBookmarks, addBookmark, removeBookmark,
+  listOpenOpportunities,
+  getProfilesByIds,
+  applyToOpportunity,
+  getApplicationsForStudent,
+  getBookmarks,
+  addBookmark,
+  removeBookmark,
   type DBOpportunity,
 } from "@/lib/db";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { StatusPill } from "@/components/StatusPill";
 import { StudentOnboarding } from "./StudentOnboarding";
 import { Loader2, Sparkles, Check, Flame, Search, SearchX, Bookmark, Star } from "lucide-react";
 import { toast } from "sonner";
 
-const DOMAINS = ["Web Dev", "Core Electronics", "Placements", "Higher Studies", "Entrepreneurship"] as const;
+const DOMAINS = [
+  "Web Dev",
+  "Core Electronics",
+  "Placements",
+  "Higher Studies",
+  "Entrepreneurship",
+] as const;
 
 type OppWithMentor = DBOpportunity & { mentor_name: string };
 
 function OppCard({
-  opp, applied, onApply, highlighted, bookmarked, onToggleBookmark,
+  opp,
+  applied,
+  onApply,
+  highlighted,
+  bookmarked,
+  onToggleBookmark,
 }: {
   opp: OppWithMentor;
   applied: boolean;
@@ -54,13 +77,17 @@ function OppCard({
       <div className="flex flex-wrap items-start justify-between gap-2 pr-10">
         <div className="flex flex-wrap gap-1.5">
           {opp.domain_tags.map((t) => (
-            <span key={t} className="status-pill bg-muted text-muted-foreground">{t}</span>
+            <span key={t} className="status-pill bg-muted text-muted-foreground">
+              {t}
+            </span>
           ))}
         </div>
         <StatusPill status={opp.status} />
       </div>
       <h3 className="mt-3 text-base font-semibold leading-snug break-words">{opp.title}</h3>
-      <p className="mt-2 line-clamp-3 text-sm text-muted-foreground break-words">{opp.description}</p>
+      <p className="mt-2 line-clamp-3 text-sm text-muted-foreground break-words">
+        {opp.description}
+      </p>
       <div className="mt-4 flex items-center justify-between border-t border-border pt-4">
         <div className="min-w-0">
           <div className="text-xs text-muted-foreground">Mentor</div>
@@ -71,7 +98,9 @@ function OppCard({
             <Check className="mr-1 h-3.5 w-3.5" /> Application Submitted
           </Button>
         ) : (
-          <Button size="sm" onClick={onApply}>Apply</Button>
+          <Button size="sm" onClick={onApply}>
+            Apply
+          </Button>
         )}
       </div>
     </div>
@@ -87,18 +116,26 @@ export function StudentDiscover() {
   const [statement, setStatement] = useState("");
   const [bookmarkedOnly, setBookmarkedOnly] = useState(false);
 
-  const { data: opportunities, isLoading, error: oppError } = useQuery({
+  const {
+    data: opportunities,
+    isLoading,
+    error: oppError,
+  } = useQuery({
     queryKey: ["opportunities", "open"],
     queryFn: async (): Promise<OppWithMentor[]> => {
       const opps = await listOpenOpportunities();
       const mentors = await getProfilesByIds(opps.map((o) => o.mentor_id));
-      return opps.map((o) => ({ ...o, mentor_name: mentors.get(o.mentor_id)?.full_name || "Mentor" }));
+      return opps.map((o) => ({
+        ...o,
+        mentor_name: mentors.get(o.mentor_id)?.full_name || "Mentor",
+      }));
     },
   });
 
   const { data: appliedSet } = useQuery({
     queryKey: ["applications", "set", user?.id],
-    queryFn: async () => new Set((await getApplicationsForStudent(user!.id)).map((a) => a.opportunity_id)),
+    queryFn: async () =>
+      new Set((await getApplicationsForStudent(user!.id)).map((a) => a.opportunity_id)),
     enabled: !!user,
   });
 
@@ -121,6 +158,7 @@ export function StudentDiscover() {
 
   const sanitizedQuery = useMemo(() => {
     const raw = search.trim().toLowerCase().slice(0, 120);
+    // eslint-disable-next-line no-control-regex
     return raw.replace(/[\x00-\x1f\x7f"'`\\[\](){}<>]/g, "").trim();
   }, [search]);
 
@@ -129,7 +167,8 @@ export function StudentDiscover() {
     const q = sanitizedQuery;
     return opportunities.filter((o) => {
       const domainOk = activeDomain === "All" || o.domain_tags.includes(activeDomain);
-      const searchOk = !q ||
+      const searchOk =
+        !q ||
         o.title.toLowerCase().includes(q) ||
         o.description.toLowerCase().includes(q) ||
         o.domain_tags.some((t) => t.toLowerCase().includes(q));
@@ -165,7 +204,8 @@ export function StudentDiscover() {
         toast.success("Application submitted");
       }
       qc.invalidateQueries({ queryKey: ["applications"] });
-      setApplyTo(null); setStatement("");
+      setApplyTo(null);
+      setStatement("");
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -177,7 +217,9 @@ export function StudentDiscover() {
     <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-10">
       <div>
         <h1 className="font-display text-2xl sm:text-4xl">Discover Opportunities</h1>
-        <p className="mt-2 text-sm text-muted-foreground">Mentorship programs open for applications across the platform.</p>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Mentorship programs open for applications across the platform.
+        </p>
       </div>
 
       <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -203,7 +245,9 @@ export function StudentDiscover() {
           <Star className={`h-3.5 w-3.5 ${bookmarkedOnly ? "fill-current" : ""}`} />
           View Bookmarked Only
           {shortlist.length > 0 && (
-            <span className="ml-1 rounded-full bg-muted px-1.5 py-0.5 text-[10px] text-foreground">{shortlist.length}</span>
+            <span className="ml-1 rounded-full bg-muted px-1.5 py-0.5 text-[10px] text-foreground">
+              {shortlist.length}
+            </span>
           )}
         </button>
       </div>
@@ -224,7 +268,9 @@ export function StudentDiscover() {
 
       <div className="mt-6 lg:mt-8 grid gap-8 lg:grid-cols-[200px_1fr]">
         <aside className="hidden lg:block space-y-1">
-          <div className="px-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Filter by Domain</div>
+          <div className="px-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            Filter by Domain
+          </div>
           {["All", ...DOMAINS].map((d) => (
             <button
               key={d}
@@ -246,7 +292,10 @@ export function StudentDiscover() {
           {isLoading ? (
             <div className="grid gap-4 sm:grid-cols-2">
               {Array.from({ length: 4 }).map((_, i) => (
-                <div key={i} className="h-48 animate-pulse rounded-2xl border border-border bg-card" />
+                <div
+                  key={i}
+                  className="h-48 animate-pulse rounded-2xl border border-border bg-card"
+                />
               ))}
             </div>
           ) : (
@@ -256,14 +305,18 @@ export function StudentDiscover() {
                   <div className="mb-3 flex items-center gap-2">
                     <Flame className="h-4 w-4 text-orange-500" />
                     <h2 className="text-lg font-semibold">Recommended For You</h2>
-                    <span className="text-xs text-muted-foreground">· based on {user.preferred_field}{user.branch ? ` · ${user.branch}` : ""}</span>
+                    <span className="text-xs text-muted-foreground">
+                      · based on {user.preferred_field}
+                      {user.branch ? ` · ${user.branch}` : ""}
+                    </span>
                   </div>
                   {recommended.length === 0 ? (
                     <div className="rounded-2xl border border-dashed border-border bg-card p-8 text-center">
                       <Sparkles className="mx-auto h-7 w-7 text-orange-500" />
                       <p className="mt-3 text-sm font-medium">No matches yet</p>
                       <p className="mt-1 text-sm text-muted-foreground">
-                        We'll alert you as soon as a mentor posts an opportunity in {user.preferred_field}!
+                        We'll alert you as soon as a mentor posts an opportunity in{" "}
+                        {user.preferred_field}!
                       </p>
                     </div>
                   ) : (
@@ -276,7 +329,10 @@ export function StudentDiscover() {
                           highlighted
                           bookmarked={shortlistSet.has(opp.id)}
                           onToggleBookmark={() => bookmarkMutation.mutate(opp.id)}
-                          onApply={() => { setApplyTo(opp); setStatement(""); }}
+                          onApply={() => {
+                            setApplyTo(opp);
+                            setStatement("");
+                          }}
                         />
                       ))}
                     </div>
@@ -298,7 +354,16 @@ export function StudentDiscover() {
                         : "Check back soon as new programs are added."}
                     </p>
                     {hasFilters && (
-                      <Button variant="outline" size="sm" className="mt-5" onClick={() => { setSearch(""); setActiveDomain("All"); setBookmarkedOnly(false); }}>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="mt-5"
+                        onClick={() => {
+                          setSearch("");
+                          setActiveDomain("All");
+                          setBookmarkedOnly(false);
+                        }}
+                      >
                         Clear filters
                       </Button>
                     )}
@@ -312,7 +377,10 @@ export function StudentDiscover() {
                         applied={!!appliedSet?.has(opp.id)}
                         bookmarked={shortlistSet.has(opp.id)}
                         onToggleBookmark={() => bookmarkMutation.mutate(opp.id)}
-                        onApply={() => { setApplyTo(opp); setStatement(""); }}
+                        onApply={() => {
+                          setApplyTo(opp);
+                          setStatement("");
+                        }}
                       />
                     ))}
                   </div>
@@ -325,7 +393,12 @@ export function StudentDiscover() {
 
       <StudentOnboarding open={needsOnboarding} />
 
-      <Dialog open={!!applyTo} onOpenChange={(o) => { if (!o) setApplyTo(null); }}>
+      <Dialog
+        open={!!applyTo}
+        onOpenChange={(o) => {
+          if (!o) setApplyTo(null);
+        }}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Apply: {applyTo?.title}</DialogTitle>
@@ -335,13 +408,21 @@ export function StudentDiscover() {
           </DialogHeader>
           <div className="space-y-2">
             <Label htmlFor="sop">Statement of Purpose</Label>
-            <Textarea id="sop" rows={7} value={statement} onChange={(e) => setStatement(e.target.value)} placeholder="Tell the mentor why you want to join, your background, and what you hope to gain…" />
+            <Textarea
+              id="sop"
+              rows={7}
+              value={statement}
+              onChange={(e) => setStatement(e.target.value)}
+              placeholder="Tell the mentor why you want to join, your background, and what you hope to gain…"
+            />
             <div className={`text-xs ${sopValid ? "text-muted-foreground" : "text-amber-500"}`}>
               {sopValid ? `${sopCount} characters` : `Min 20 characters · ${sopCount}/20`}
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setApplyTo(null)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setApplyTo(null)}>
+              Cancel
+            </Button>
             <Button onClick={() => apply.mutate()} disabled={apply.isPending || !sopValid}>
               {apply.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Submit application

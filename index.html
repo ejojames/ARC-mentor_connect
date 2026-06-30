@@ -1,31 +1,19 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
-    <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval' data: blob:; script-src * 'unsafe-inline' 'unsafe-eval'; connect-src *; img-src * data: blob:; style-src * 'unsafe-inline'; font-src *;" />
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Mentorship request platform connecting students with alumni mentors across domains." />
     <title>ARC Alumni Trainee Cell</title>
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="description" content="Mentorship request platform connecting students with alumni mentors across domains." />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https: data:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: https:; connect-src 'self' https: wss:;" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap"
+    />
     <script>
       (function(){try{var t=localStorage.getItem('arc-theme');if(!t){t=window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';}var r=document.documentElement;if(t==='dark')r.classList.add('dark');r.style.colorScheme=t;}catch(e){}})();
-    </script>
-    <script>
-      window.onerror = function(msg, src, line, col, err) {
-        var d = document.createElement('div');
-        d.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#dc2626;color:#fff;padding:16px;z-index:99999;font-family:monospace;font-size:13px;white-space:pre-wrap;';
-        d.textContent = 'JS ERROR: ' + msg + '\nFile: ' + src + ':' + line + '\n' + (err && err.stack ? err.stack : '');
-        document.body && document.body.appendChild(d);
-      };
-      window.onunhandledrejection = function(e) {
-        var d = document.createElement('div');
-        d.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#7c3aed;color:#fff;padding:16px;z-index:99999;font-family:monospace;font-size:13px;white-space:pre-wrap;';
-        d.textContent = 'PROMISE ERROR: ' + (e.reason && (e.reason.stack || e.reason.message || e.reason));
-        document.body && document.body.appendChild(d);
-      };
     </script>
   </head>
   <body>
