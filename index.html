@@ -3,7 +3,22 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Mentor Connect</title>
+    <meta name="description" content="Mentorship request platform connecting students with alumni mentors across domains." />
+    <title>ARC Alumni Trainee Cell</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" />
+    <script>
+      (function(){try{var t=localStorage.getItem('arc-theme');if(!t){t=window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';}var r=document.documentElement;if(t==='dark')r.classList.add('dark');r.style.colorScheme=t;}catch(e){}})();
+    </script>
+    <script>
+      window.addEventListener('error', function(e) {
+        var errDiv = document.createElement('div');
+        errDiv.style = 'position:fixed;top:0;left:0;width:100%;background:red;color:white;padding:20px;z-index:99999;font-family:monospace;white-space:pre-wrap;';
+        errDiv.innerText = 'CRITICAL RUNTIME ERROR: ' + e.message + '\nAt: ' + e.filename + ':' + e.lineno;
+        document.body.appendChild(errDiv);
+      });
+    </script>
   </head>
   <body class="bg-zinc-950 text-zinc-100">
     <div id="root"></div>
