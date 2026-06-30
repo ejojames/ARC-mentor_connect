@@ -48,7 +48,9 @@ function AuthPage() {
   useEffect(() => {
     if (authLoading) return;
     if (user) {
-      navigate({ to: "/dashboard" });
+      if (window.location.pathname !== "/dashboard") {
+        navigate({ to: "/dashboard" });
+      }
     }
   }, [user, authLoading, navigate]);
 
