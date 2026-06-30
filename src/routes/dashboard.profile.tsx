@@ -1,4 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { isProfileComplete } from "./onboarding";
 import { useEffect, useState } from "react";
 
 import { useAuth } from "@/lib/auth";
@@ -29,7 +30,16 @@ function ProfilePage() {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    if (!loading && !user) navigate({ to: "/auth" });
+    if (loading) return;
+    // No session → go to login.
+    if (!user) {
+      navigate({ to: "/auth" });
+      return;
+    }
+    // Authenticated but profile incomplete → finish onboarding before editing.
+    if (!isProfileComplete(user)) {
+      navigate({ to: "/onboarding" });
+    }
   }, [loading, user, navigate]);
 
   useEffect(() => {
