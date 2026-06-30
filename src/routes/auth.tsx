@@ -66,10 +66,8 @@ function AuthPage() {
         if (role === "STUDENT" && !branch) {
           toast.error("Please select your engineering branch"); return;
         }
-        // Email confirmation is DISABLED in Supabase — signUp returns a live session immediately.
         await signUpWithRole({ email, password, full_name: fullName, role });
 
-        // Update the student profile with branch/field/cgpa/semester captured during signup.
         const { data: who } = await supabase.auth.getUser();
         const uid = who.user?.id;
         if (uid && role === "STUDENT") {
@@ -81,19 +79,14 @@ function AuthPage() {
           });
         }
         toast.success("Account created", { description: "Welcome to ARC ATC." });
+        window.location.href = "/dashboard";
       } else {
         await signInWithPassword(email, password);
         toast.success("Signed in");
+        window.location.href = "/dashboard";
       }
-      await refresh();
-      // Wait for React to apply the state update from refresh() to the context consumers.
-      // This prevents the route guard in /dashboard from seeing a stale null user and bouncing back.
-      setTimeout(() => {
-        navigate({ to: "/dashboard" });
-      }, 50);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Authentication failed");
-    } finally {
       setSubmitting(false);
     }
   };
