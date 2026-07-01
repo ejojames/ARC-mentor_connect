@@ -21,6 +21,7 @@ export interface DBUser {
   cgpa?: number | null;
   semester?: number | null;
   institute?: string | null;
+  status?: string;
 }
 
 export interface DBOpportunity {
@@ -90,7 +91,11 @@ export async function signUpWithRole(input: {
     email: input.email.trim(),
     password: input.password,
     options: {
-      data: { full_name: input.full_name.trim(), role: input.role },
+      data: {
+        full_name: input.full_name.trim(),
+        role: input.role,
+        status: input.role === "MENTOR" ? "pending" : "approved",
+      },
       emailRedirectTo: redirectTo,
     },
   });
@@ -118,6 +123,7 @@ export async function getUserById(id: string): Promise<DBUser | null> {
     cgpa: p.cgpa ?? null,
     semester: p.semester ?? null,
     institute: p.institute ?? null,
+    status: p.status ?? undefined,
   };
 }
 

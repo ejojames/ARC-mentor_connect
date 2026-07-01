@@ -182,6 +182,7 @@ export type Database = {
           institute: string | null;
           preferred_field: string | null;
           semester: number | null;
+          status: string | null;
         };
         Insert: {
           bio?: string;
@@ -194,6 +195,7 @@ export type Database = {
           institute?: string | null;
           preferred_field?: string | null;
           semester?: number | null;
+          status?: string | null;
         };
         Update: {
           bio?: string;
@@ -206,6 +208,7 @@ export type Database = {
           institute?: string | null;
           preferred_field?: string | null;
           semester?: number | null;
+          status?: string | null;
         };
         Relationships: [];
       };

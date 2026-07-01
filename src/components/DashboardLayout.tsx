@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 
 export function DashboardLayout({ children }: { children: ReactNode }) {
-  const { profile, role, signOut } = useAuth();
+  const { user, profile, role, signOut } = useAuth();
   const navigate = useNavigate();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
 
@@ -39,6 +39,25 @@ export function DashboardLayout({ children }: { children: ReactNode }) {
     await signOut();
     navigate({ to: "/auth" });
   };
+
+  if (role === "MENTOR" && user?.status === "pending") {
+    return (
+      <div className="flex min-h-screen w-full items-center justify-center bg-background p-4">
+        <div className="w-full max-w-md rounded-xl border border-border bg-card p-8 text-center shadow-lg">
+          <h2 className="mb-4 text-2xl font-bold tracking-tight text-foreground">Account Under Review</h2>
+          <p className="mb-8 text-muted-foreground">
+            Our admin team is verifying your mentor credentials. You will gain access shortly.
+          </p>
+          <button
+            onClick={handleSignOut}
+            className="inline-flex h-10 items-center justify-center rounded-md bg-primary px-8 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
+          >
+            Sign Out
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen w-full bg-background">
