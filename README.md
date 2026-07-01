@@ -9,9 +9,12 @@ An institutional alumni-trainee networking platform designed to bridge the gap b
 Arc Mentor Connect was developed to tackle systemic friction in institutional networking and career placement.
 
 ### The Problems We Solve
-* **Information Silos**: Breaking down the historical barrier between current students and successful alumni, making hard-earned institutional knowledge directly accessible.
-* **Unverified Mentorship**: Addressing the lack of quality control in traditional networking platforms by instituting strict administrative gatekeeping before mentors can broadcast opportunities.
-* **Opportunity Fragmentation**: Consolidating internships, project collaborations, and career guidance into a single, domain-specific hub rather than relying on noisy, generalized social media channels.
+* **Information Silos**: Breaks down the barrier between current students and successful alumni, making hard-earned advice and institutional knowledge easy to find.
+* **Unverified Mentorship (MVP Authentication)**: To ensure only qualified mentors can post, new mentor accounts are securely locked by default. Because this is an MVP, we use a direct database approval method (approving via the Supabase dashboard) rather than building a heavy, dedicated admin interface.
+* **Opportunity Fragmentation**: Instead of students digging through emails or noisy social media groups, mentors can clearly label their postings (e.g., "Mentorship" vs. "Internship"), keeping everything categorized in one specialized hub.
+* **Communication Mess**: Fixes messy email chains by giving every opportunity its own dedicated announcement room, allowing mentors to broadcast updates to all participants instantly.
+* **Manual Overload**: Eliminates the stress of manually reviewing hundreds of applicants. Mentors can set automatic acceptance caps and strict eligibility rules (like a minimum CGPA or specific semesters) to automatically filter out unqualified candidates.
+* **Data Traps & Blind Spots**: Mentors no longer have to guess how their postings are performing or struggle to extract data. The platform provides a single-page analytics dashboard for instant insights and allows easy 1-click exporting of participant data directly to Excel.
 
 ### Our Innovative Approaches
 * **Zero-Friction Role Routing**: A unified authentication pipeline that contextually transforms the entire application layout, navigation tree, and data access policies based on the user's selected archetype (Student vs. Mentor) without requiring separate portals.
@@ -119,11 +122,3 @@ To preserve the professional credibility of the platform, an automated security 
 
 ### Graceful Connection Timeouts
 The application includes custom connection listeners. If a network interruption or configuration bottleneck stalls a cloud database query for longer than 3000ms, the initialization sequence automatically breaks the loading state loop to render proper diagnostic layouts instead of keeping the user trapped on an infinite loading icon.
-
-### Key Platform Capabilities
-* **Opportunity Categorization**: Mentors have the flexibility to distinctly classify their postings (e.g., Mentorship vs. Internship), ensuring students can easily filter and find exactly what they are looking for.
-* **Dedicated Announcement Rooms**: Each opportunity features a centralized, dedicated communication room where mentors can effortlessly broadcast updates and make global announcements to all participants.
-* **Automated Application Triage**: Mentors can toggle auto-accept configurations (with optional capacity caps) to instantly approve incoming applications, dramatically reducing manual administrative overhead.
-* **Custom Eligibility Filtering**: Opportunities can be configured with strict prerequisites (e.g., minimum CGPA, specific semesters, or designated academic branches) to ensure only highly qualified candidates can apply.
-* **Frictionless Data Export**: To streamline administrative tasks, mentors can seamlessly export participant data (including email addresses and profile details) directly to Excel for external processing.
-* **Unified Analytics Dashboard**: The mentor dashboard is engineered to provide a comprehensive, single-glance overview of critical data analytics, summarizing engagement metrics and application volumes instantly without complex navigation.
