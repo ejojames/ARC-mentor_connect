@@ -1,8 +1,9 @@
 # Arc Mentor Connect
 
 An institutional alumni-trainee networking platform designed to bridge the gap between students and experienced mentors. This platform enables students to explore career paths and connect with alumni, while allowing verified mentors to post professional and academic opportunities.
-##LIVE LINK : https://arc-mentor-connect.onrender.com/
+
 ---
+##LIVE LINK : https://arc-mentor-connect.onrender.com/
 <img width="1920" height="1080" alt="Screenshot 2026-07-01 205136" src="https://github.com/user-attachments/assets/f52c14b6-0b2c-4bfe-98d7-f9e2ebbaae0f" />
 
 ## Key Problems Solved & Innovative Approaches
